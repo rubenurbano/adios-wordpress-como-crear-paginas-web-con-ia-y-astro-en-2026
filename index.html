@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adiós WordPress — Tutorial IA + Astro 2026</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --card: #0f172a;
+    --accent: #1e3a5f;
+    --text: #e6edf7;
+    --muted: #93a4bd;
+    --border: #1c2942;
+    --ok: #35c07a;
+    --warn: #f0b840;
+    --bad: #ef5a6f;
+    --code: #060a14;
+    --font-scale: 1;
+  }
+  [data-theme="light"] {
+    --bg: #f4f7fc;
+    --card: #ffffff;
+    --accent: #1e3a5f;
+    --text: #0a0e1a;
+    --muted: #526181;
+    --border: #d3dcea;
+    --code: #eef2f9;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: calc(16px * var(--font-scale));
+    line-height: 1.65;
+    transition: background .3s, color .3s;
+    padding-bottom: 80px;
+  }
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, #4a90d9, #35c07a);
+    width: 0%; z-index: 999; transition: width .1s;
+  }
+  header {
+    padding: 24px 20px 10px;
+    text-align: center;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  header h1 {
+    font-size: 1.9rem;
+    margin: 14px 0 6px;
+    line-height: 1.25;
+    background: linear-gradient(135deg, #7ab8f5, #35c07a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header .sub {
+    color: var(--muted);
+    font-size: .95rem;
+    margin: 0;
+  }
+  .svg-hero {
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    display: block;
+    margin: 0 auto 8px;
+  }
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,14,26,.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+  }
+  [data-theme="light"] .toolbar { background: rgba(244,247,252,.94); }
+  .toolbar button, .toolbar input {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 11px;
+    font-size: .85rem;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: inherit;
+  }
+  .toolbar button:hover { background: var(--accent); border-color: var(--accent); }
+  .toolbar input {
+    min-width: 160px;
+    cursor: text;
+  }
+  .toolbar input::placeholder { color: var(--muted); }
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 12px 12px 0;
+    max-width: 1100px;
+    margin: 0 auto;
+    justify-content: center;
+  }
+  .tab {
+    background: var(--card);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px 10px 0 0;
+    padding: 9px 15px;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .3px;
+  }
+  .tab:hover { color: var(--text); background: var(--accent); }
+  .tab.active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 -2px 12px rgba(74,144,217,.35);
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 22px 16px 40px;
+  }
+  .panel { display: none; animation: fade .35s ease; }
+  .panel.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: 1.4rem;
+    margin: 6px 0 14px;
+    color: #7ab8f5;
+    border-left: 4px solid var(--accent);
+    padding-left: 12px;
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin: 18px 0 8px;
+    color: #8fd0ff;
+  }
+  h4 { font-size: 1rem; margin: 14px 0 6px; color: var(--text); }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 5px 0; }
+  a { color: #7ab8f5; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: var(--code);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .88em;
+    color: #b8e0ff;
+    border: 1px solid var(--border);
+  }
+  pre {
+    background: var(--code);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    overflow-x: auto;
+    font-size: .84rem;
+    line-height: 1.55;
+    position: relative;
+    color: #cfe6ff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: .9rem;
+    overflow-x: auto;
+    display: block;
+  }
+  table thead, table tbody { display: table; width: 100%; }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 9px 11px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--accent); color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: rgba(30,58,95,.18); }
+  .note, .tip, .warn, .bad, .ok {
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    border-left: 4px solid;
+    font-size: .92rem;
+  }
+  .note { background: rgba(74,144,217,.1); border-color: #4a90d9; }
+  .tip { background: rgba(53,192,122,.1); border-color: var(--ok); }
+  .warn { background: rgba(240,184,64,.1); border-color: var(--warn); }
+  .bad { background: rgba(239,90,111,.1); border-color: var(--bad); }
+  .ok { background: rgba(53,192,122,.1); border-color: var(--ok); }
+  .note b, .tip b, .warn b, .bad b, .ok b { color: #fff; }
+  [data-theme="light"] .note b, [data-theme="light"] .tip b, [data-theme="light"] .warn b, [data-theme="light"] .bad b, [data-theme="light"] .ok b { color: var(--text); }
+
+  /* ===== Bloques de prompt y botón copiar (nuevo sistema robusto) ===== */
+  .promptBox {
+    position: relative;
+    margin: 14px 0;
+  }
+  .promptBox > pre.promptBody {
+    padding-right: 110px;
+    margin: 0;
+  }
+  .copyBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 14px;
+    font-size: .78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: inherit;
+    letter-spacing: .4px;
+    min-height: 38px;
+    line-height: 1.2;
+    z-index: 2;
+    touch-action: manipulation;
+  }
+  .copyBtn:hover { background: #2c5585; transform: translateY(-1px); }
+  .copyBtn.done { background: var(--ok); }
+
+  /* Índice de prompts */
+  .prompt-index {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+  .prompt-index li {
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .prompt-index li:last-child { border-bottom: none; }
+  .prompt-index a {
+    display: block;
+    padding: 11px 6px;
+    color: #7ab8f5;
+    font-weight: 600;
+    font-size: .95rem;
+    transition: all .2s;
+    border-radius: 6px;
+  }
+  .prompt-index a::before {
+    content: "→ ";
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .prompt-index a:hover {
+    color: #35c07a;
+    background: rgba(53,192,122,.08);
+    padding-left: 12px;
+    text-decoration: none;
+  }
+  .prompt-card { scroll-margin-top: 90px; }
+  .prompt-card h3 { color: #7ab8f5; }
+  .prompt-card .meta {
+    font-size: .92rem;
+    margin: 6px 0;
+  }
+  .prompt-card .meta b { color: #8fd0ff; }
+
+  @media (max-width: 520px) {
+    .promptBox > pre.promptBody {
+      padding-right: 14px;
+      padding-top: 54px;
+    }
+    .copyBtn { top: 8px; right: 8px; }
+  }
+
+  .step {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    border-left: 5px solid #4a90d9;
+  }
+  .step-num {
+    display: inline-block;
+    background: #4a90d9;
+    color: #fff;
+    width: 28px; height: 28px;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+    font-weight: 700;
+    margin-right: 8px;
+    font-size: .85rem;
+  }
+  .step h4 { display: inline; font-size: 1.05rem; color: #fff; }
+  [data-theme="light"] .step h4 { color: var(--text); }
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .checklist input[type="checkbox"] {
+    width: 18px; height: 18px;
+    margin-top: 3px;
+    accent-color: var(--ok);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .checklist label { cursor: pointer; flex: 1; }
+  .checklist li.done label { text-decoration: line-through; color: var(--muted); }
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 10px 0;
+    cursor: pointer;
+  }
+  details summary {
+    font-weight: 600;
+    color: #8fd0ff;
+    padding: 4px 0;
+    list-style: none;
+    position: relative;
+    padding-right: 22px;
+  }
+  details summary::after {
+    content: "+";
+    position: absolute;
+    right: 0; top: 0;
+    font-size: 1.2rem;
+    color: var(--muted);
+  }
+  details[open] summary::after { content: "−"; }
+  .credit-hero {
+    text-align: center;
+    padding: 30px 16px;
+  }
+  .credit-name {
+    font-size: clamp(2.2rem, 8vw, 4rem);
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #7ab8f5, #35c07a, #7ab8f5);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 4s ease infinite;
+    margin: 10px 0;
+    line-height: 1.1;
+  }
+  @keyframes shimmer {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .credit-role {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .credit-date {
+    display: inline-block;
+    margin-top: 18px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-family: ui-monospace, monospace;
+    font-size: .95rem;
+    letter-spacing: .5px;
+  }
+  .to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    display: none;
+    z-index: 200;
+    transition: all .25s;
+  }
+  .to-top.show { display: block; }
+  .to-top:hover { transform: translateY(-3px); background: #2c5585; }
+  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 720px) {
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+  }
+  .search-hl { background: #f0b840; color: #0a0e1a; border-radius: 3px; padding: 0 2px; }
+  .no-results { color: var(--muted); text-align: center; padding: 20px; font-style: italic; display: none; }
+  @media print {
+    .toolbar, .tabs, .to-top, .copyBtn, .progress-bar { display: none !important; }
+    body { background: #fff; color: #000; }
+    .panel { display: block !important; page-break-after: always; }
+    .card, pre { border: 1px solid #ccc; background: #fff; color: #000; }
+    h2 { color: #000; }
+  }
+  footer {
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--muted);
+    font-size: .82rem;
+    border-top: 1px solid var(--border);
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<header>
+  <!-- SVG ANIMADO PRINCIPAL: Flujo IA + Astro -->
+  <svg class="svg-hero" viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flujo de trabajo: usuario, IA, Astro, SEO, despliegue">
+    <defs>
+      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#4a90d9"/>
+        <stop offset="100%" stop-color="#35c07a"/>
+      </linearGradient>
+      <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1e3a5f"/>
+        <stop offset="100%" stop-color="#4a90d9"/>
+      </linearGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <rect x="0" y="0" width="720" height="260" fill="none"/>
+    <g stroke="#1c2942" stroke-width="1" opacity="0.4">
+      <line x1="0" y1="65" x2="720" y2="65"/>
+      <line x1="0" y1="130" x2="720" y2="130"/>
+      <line x1="0" y1="195" x2="720" y2="195"/>
+    </g>
+
+    <g>
+      <rect x="20" y="95" width="110" height="70" rx="12" fill="url(#g2)" stroke="#4a90d9" stroke-width="1.5"/>
+      <text x="75" y="125" text-anchor="middle" fill="#e6edf7" font-family="sans-serif" font-size="13" font-weight="700">USUARIO</text>
+      <text x="75" y="145" text-anchor="middle" fill="#93a4bd" font-family="sans-serif" font-size="10">pide en español</text>
+      <circle cx="75" cy="105" r="3" fill="#35c07a">
+        <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <g>
+      <line x1="132" y1="130" x2="180" y2="130" stroke="#4a90d9" stroke-width="2" stroke-dasharray="6 4">
+        <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="1s" repeatCount="indefinite"/>
+      </line>
+      <polygon points="180,124 194,130 180,136" fill="#4a90d9">
+        <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+      </polygon>
+    </g>
+
+    <g>
+      <rect x="196" y="80" width="130" height="100" rx="12" fill="url(#g2)" stroke="#35c07a" stroke-width="2" filter="url(#glow)">
+        <animate attributeName="stroke-opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <text x="261" y="112" text-anchor="middle" fill="#35c07a" font-family="sans-serif" font-size="14" font-weight="700">CLAUDE CODE</text>
+      <text x="261" y="132" text-anchor="middle" fill="#e6edf7" font-family="sans-serif" font-size="10">Agente IA</text>
+      <text x="261" y="150" text-anchor="middle" fill="#93a4bd" font-family="sans-serif" font-size="9">escribe el código</text>
+      <circle cx="230" cy="168" r="3" fill="#35c07a">
+        <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite" begin="0s"/>
+      </circle>
+      <circle cx="250" cy="168" r="3" fill="#35c07a">
+        <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite" begin="0.33s"/>
+      </circle>
+      <circle cx="270" cy="168" r="3" fill="#35c07a">
+        <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite" begin="0.66s"/>
+      </circle>
+    </g>
+
+    <g>
+      <line x1="328" y1="130" x2="376" y2="130" stroke="#35c07a" stroke-width="2" stroke-dasharray="6 4">
+        <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="1s" repeatCount="indefinite"/>
+      </line>
+      <polygon points="376,124 390,130 376,136" fill="#35c07a"/>
+    </g>
+
+    <g>
+      <rect x="392" y="80" width="130" height="100" rx="12" fill="url(#g2)" stroke="#7ab8f5" stroke-width="1.5"/>
+      <text x="457" y="112" text-anchor="middle" fill="#7ab8f5" font-family="sans-serif" font-size="14" font-weight="700">ASTRO</text>
+      <text x="457" y="132" text-anchor="middle" fill="#e6edf7" font-family="sans-serif" font-size="10">Framework</text>
+      <text x="457" y="150" text-anchor="middle" fill="#93a4bd" font-family="sans-serif" font-size="9">HTML ultraligero</text>
+      <path d="M447,160 L455,170 L448,170 L456,182 L452,172 L459,172 Z" fill="#f0b840">
+        <animateTransform attributeName="transform" type="scale" values="1;1.15;1" dur="1.2s" repeatCount="indefinite" additive="sum"/>
+        <animateTransform attributeName="transform" type="translate" values="0 0;-3 -3;0 0" dur="1.2s" repeatCount="indefinite" additive="sum"/>
+      </path>
+    </g>
+
+    <g>
+      <line x1="524" y1="130" x2="572" y2="130" stroke="#7ab8f5" stroke-width="2" stroke-dasharray="6 4">
+        <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="1s" repeatCount="indefinite"/>
+      </line>
+      <polygon points="572,124 586,130 572,136" fill="#7ab8f5"/>
+    </g>
+
+    <g>
+      <rect x="588" y="80" width="115" height="100" rx="12" fill="url(#g1)" stroke="#35c07a" stroke-width="1.5"/>
+      <text x="645" y="108" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="12" font-weight="700">SEO</text>
+      <text x="645" y="126" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="11">+ Schema</text>
+      <text x="645" y="144" text-anchor="middle" fill="#e6edf7" font-family="sans-serif" font-size="10">+ Multilingüe</text>
+      <circle cx="645" cy="165" r="6" fill="#35c07a">
+        <animate attributeName="r" values="4;7;4" dur="1.6s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <g>
+      <path d="M261,182 Q261,215 400,215 Q540,215 645,182" fill="none" stroke="#f0b840" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6">
+        <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1.2s" repeatCount="indefinite"/>
+      </path>
+      <rect x="300" y="205" width="200" height="24" rx="12" fill="#0f172a" stroke="#f0b840" stroke-width="1"/>
+      <text x="400" y="221" text-anchor="middle" fill="#f0b840" font-family="sans-serif" font-size="10" font-weight="600">MCP → Semrush · Search Console</text>
+    </g>
+
+    <text x="360" y="30" text-anchor="middle" fill="#7ab8f5" font-family="sans-serif" font-size="15" font-weight="700" letter-spacing="2">
+      FLUJO DE TRABAJO IA + ASTRO
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+    </text>
+    <text x="360" y="48" text-anchor="middle" fill="#93a4bd" font-family="sans-serif" font-size="10">
+      de idea a web publicada en minutos
+    </text>
+  </svg>
+
+  <h1>Adiós WordPress</h1>
+  <p class="sub">Cómo crear páginas web con IA y Astro en 2026 · Tutorial interactivo</p>
+</header>
+
+<div class="toolbar" role="toolbar" aria-label="Controles del tutorial">
+  <input type="search" id="searchInput" placeholder="🔍 Buscar en el tutorial..." aria-label="Buscar">
+  <button id="btnSearch" title="Buscar">Buscar</button>
+  <button id="btnClear" title="Limpiar búsqueda">Limpiar</button>
+  <button id="btnFontDown" title="Reducir texto">A−</button>
+  <button id="btnFontUp" title="Aumentar texto">A+</button>
+  <button id="btnTheme" title="Cambiar tema">🌙 Tema</button>
+  <button id="btnPrint" title="Imprimir o guardar PDF">🖨️ PDF</button>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Secciones del tutorial">
+  <button class="tab active" data-tab="inicio" role="tab">INICIO</button>
+  <button class="tab" data-tab="conceptos" role="tab">CONCEPTOS</button>
+  <button class="tab" data-tab="procedimiento" role="tab">PROCEDIMIENTO</button>
+  <button class="tab" data-tab="prompts" role="tab">PROMPTS</button>
+  <button class="tab" data-tab="practica" role="tab">PRÁCTICA</button>
+  <button class="tab" data-tab="errores" role="tab">ERRORES</button>
+  <button class="tab" data-tab="resumen" role="tab">RESUMEN</button>
+  <button class="tab" data-tab="fuentes" role="tab">FUENTES</button>
+  <button class="tab" data-tab="creditos" role="tab">CRÉDITOS</button>
+</nav>
+
+<main id="mainContent">
+
+  <!-- ==================== INICIO ==================== -->
+  <section class="panel active" id="panel-inicio" role="tabpanel">
+    <div class="card">
+      <h2>Bienvenido a la nueva era web</h2>
+      <p>Este tutorial te enseña, paso a paso y sin conocimientos previos de programación, cómo <b>crear páginas web profesionales con Inteligencia Artificial (Claude Code) y el framework Astro</b>, dejando atrás la lentitud y complejidad de WordPress.</p>
+      <p>Está escrito <b>para principiantes</b>: primero entenderás <i>qué es</i>, luego <i>para qué sirve</i>, después <i>por qué importa</i> y finalmente <i>cómo se hace</i>, con ejemplos, ejercicios y errores frecuentes.</p>
+    </div>
+
+    <div class="card">
+      <h3>🎯 ¿Qué vas a aprender?</h3>
+      <ul>
+        <li>Qué son la IA y Astro y por qué sustituyen a WordPress en 2026.</li>
+        <li>Los 4 conceptos técnicos clave: Astro, Claude Code, MCP y Schema Markup.</li>
+        <li>Los <b>7 pasos</b> para construir una landing page completa en minutos.</li>
+        <li>Los <b>8 prompts oficiales</b> que debes copiar y adaptar.</li>
+        <li>Cómo evitar los 5 errores más frecuentes.</li>
+        <li>Cómo hacer SEO moderno (no el antiguo <i>keyword stuffing</i>).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>🧰 ¿Qué necesitas antes de empezar?</h3>
+      <ul class="checklist" data-list="inicio-req">
+        <li><input type="checkbox" id="r1"><label for="r1">Un ordenador con Windows o Mac.</label></li>
+        <li><input type="checkbox" id="r2"><label for="r2">Una cuenta en <code>claude.com</code> (se recomienda plan Pro con Claude Code).</label></li>
+        <li><input type="checkbox" id="r3"><label for="r3">Una carpeta local para tu proyecto Astro.</label></li>
+        <li><input type="checkbox" id="r4"><label for="r4">Un proveedor de hosting (ej. Raiola Networks) — opcional al inicio.</label></li>
+        <li><input type="checkbox" id="r5"><label for="r5">Muchas ganas de experimentar.</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>🚀 Objetivos del tutorial</h3>
+      <ol>
+        <li>Entender <b>por qué</b> la IA + Astro es el nuevo estándar.</li>
+        <li>Dominar el <b>flujo de trabajo</b> de 7 pasos.</li>
+        <li>Saber <b>escribir prompts</b> eficaces y copiables.</li>
+        <li>Publicar una <b>landing page real</b> optimizada para Google.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>🧭 Cómo usar este tutorial</h3>
+      <p>Usa las <b>pestañas superiores</b> para navegar. La barra de herramientas te permite:</p>
+      <ul>
+        <li>🔍 <b>Buscar</b> cualquier palabra en todo el tutorial.</li>
+        <li><b>A− / A+</b> para ajustar el tamaño del texto.</li>
+        <li>🌙 <b>Tema</b> para alternar modo oscuro/claro.</li>
+        <li>🖨️ <b>PDF</b> para imprimir o guardar como PDF.</li>
+      </ul>
+      <div class="tip"><b>Consejo:</b> tu progreso (checklists, tema, tamaño y pestaña activa) se guarda automáticamente en tu navegador.</div>
+    </div>
+  </section>
+
+  <!-- ==================== CONCEPTOS ==================== -->
+  <section class="panel" id="panel-conceptos" role="tabpanel">
+    <div class="card">
+      <h2>Conceptos fundamentales</h2>
+      <p>Antes de tocar el teclado, entendamos <b>qué es cada cosa</b>. Cada término se explica con una analogía cotidiana.</p>
+    </div>
+
+    <div class="card">
+      <h3>1. ¿Qué es crear webs con IA y Astro?</h3>
+      <p>Consiste en usar <b>asistentes inteligentes</b> (como Claude Code) que escriben el código por ti, sobre un <b>framework moderno</b> llamado Astro.</p>
+      <div class="grid-2">
+        <div class="bad">
+          <b>Método antiguo (WordPress):</b> compras un kit pesado de piezas prefabricadas. Para poner una ventana arrastras un remolque gigante lleno de herramientas que casi no usas. La casa queda pesada y tarda en abrir las puertas.
+        </div>
+        <div class="ok">
+          <b>Método moderno (IA + Astro):</b> tienes un arquitecto robot ultraeficiente. Le dices en español qué quieres y levanta la estructura con los materiales más ligeros. Se edifica en minutos.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>2. Los 4 conceptos técnicos clave</h3>
+
+      <h4>🛞 Astro — el chasis súper rápido</h4>
+      <p><b>¿Qué es?</b> Un <i>framework</i> para programar páginas web. <b>Explicación sencilla:</b> como el chasis de un coche de carreras diseñado para pesar lo mínimo. No carga cosas pesadas a menos que sean estrictamente necesarias.</p>
+
+      <h4>🤖 Claude Code — el copiloto programador</h4>
+      <p><b>¿Qué es?</b> Herramienta de línea de comandos e IA desarrollada por Anthropic. <b>Explicación sencilla:</b> como tener un programador sénior sentado a tu lado. Le dictas en español y crea archivos, edita código y corrige errores por ti.</p>
+
+      <h4>🔌 MCP (Model Context Protocol) — el puente de datos</h4>
+      <p><b>¿Qué es?</b> Un protocolo que conecta la IA con herramientas externas (Semrush, Google Search Console). <b>Explicación sencilla:</b> un conector enchufe-clavija que permite a la IA "hablar" con Google o Semrush antes de escribir la página.</p>
+
+      <h4>🏷️ Schema Markup — la ficha técnica para Google</h4>
+      <p><b>¿Qué es?</b> Código invisible que dice a los buscadores de qué trata tu página. <b>Analogía:</b> como la etiqueta de una maleta en el avión; Google entiende al instante si eres restaurante, agencia o tienda.</p>
+    </div>
+
+    <div class="card">
+      <h3>3. Flujo de trabajo moderno</h3>
+      <pre>  [ Usuario da instrucción en español ]
+                 │
+                 ▼
+     [ Claude Code + Modelo de IA ]
+                 │  ◄── MCP a Semrush / Search Console
+                 ▼
+   [ Genera código ultraligero en Astro ]
+                 │
+                 ▼
+   [ Estructura SEO + Schema + Multilingüe ]
+                 │
+                 ▼
+   [ Despliegue en hosting de alto rendimiento ]</pre>
+    </div>
+
+    <div class="card">
+      <h3>4. SEO antiguo vs. SEO moderno</h3>
+      <div class="bad">
+        <b>❌ SEO antiguo (antinatural):</b><br>
+        <i>Título:</i> <code>Agencia SEO Sevilla - Posicionamiento Web Sevilla</code><br>
+        <i>H1:</i> <code>Agencia SEO Sevilla porque hacemos posicionamiento en Sevilla</code><br>
+        <b>Por qué falla:</b> robótico, repetitivo, Google penaliza el <i>keyword stuffing</i> y al usuario le da mala impresión.
+      </div>
+      <div class="ok">
+        <b>✅ SEO moderno con IA:</b><br>
+        <i>Keyword discreta:</i> <code>Agencia de automatizaciones</code><br>
+        <i>H1 para el usuario:</i> <code>Tu operativa trabajando sola las 24 horas del día</code><br>
+        <b>Por qué funciona:</b> satisface la keyword pero captura al humano solucionando su verdadero problema.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>5. Tabla comparativa: WordPress vs. IA + Astro</h3>
+      <table>
+        <thead>
+          <tr><th>Característica</th><th>WordPress + Elementor</th><th>IA + Astro</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tecnología base</td><td>PHP (antigua)</td><td>JavaScript / Astro (moderna)</td></tr>
+          <tr><td>Velocidad de carga</td><td>Lenta por plugins</td><td>Ultrarrápida</td></tr>
+          <tr><td>Tiempo de desarrollo</td><td>Días o semanas</td><td>7–10 minutos (landing)</td></tr>
+          <tr><td>Contenido y SEO</td><td>Manual</td><td>Automatizado con IA</td></tr>
+          <tr><td>Multilingüe</td><td>Plugins pesados</td><td>Automático (ES, CA, EN…)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>6. Glosario rápido</h3>
+      <ul>
+        <li><b>Astro:</b> framework enfocado en rendimiento y HTML ultraligero.</li>
+        <li><b>Canibalización SEO:</b> dos páginas del mismo sitio compiten por la misma keyword.</li>
+        <li><b>E-E-A-T:</b> Experiencia, Pericia, Autoridad y Confianza (criterios de Google).</li>
+        <li><b>Hreflang:</b> etiqueta HTML que indica el idioma de una página.</li>
+        <li><b>JSON-LD:</b> formato para escribir Schema Markup de forma limpia.</li>
+        <li><b>MCP:</b> protocolo para conectar IA con datos externos.</li>
+        <li><b>Responsive Design:</b> diseño que se adapta a cualquier pantalla.</li>
+        <li><b>Sitemap:</b> archivo XML que enumera las páginas del sitio para Google.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== PROCEDIMIENTO ==================== -->
+  <section class="panel" id="panel-procedimiento" role="tabpanel">
+    <div class="card">
+      <h2>Procedimiento: 7 pasos para crear tu web</h2>
+      <p>Sigue estos pasos <b>en orden</b>. Cada paso tiene un objetivo, una explicación y una sola acción principal.</p>
+
+      <div class="note">
+        <b>Checklist previo al desarrollo</b>
+        <ul class="checklist" data-list="proc-prev">
+          <li><input type="checkbox" id="p1"><label for="p1">Ordenador con Windows o Mac.</label></li>
+          <li><input type="checkbox" id="p2"><label for="p2">Cuenta en Claude.com (plan Pro / Claude Code).</label></li>
+          <li><input type="checkbox" id="p3"><label for="p3">Proyecto base o carpeta local configurada.</label></li>
+          <li><input type="checkbox" id="p4"><label for="p4">Proveedor de hosting listo (ej. Raiola Networks).</label></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">1</span><h4>Configurar el entorno con Claude Code</h4>
+      <p><b>Objetivo:</b> que la IA tenga acceso directo a tus archivos.</p>
+      <ol>
+        <li>Accede a <code>claude.com/download</code> e instala la app o configura Claude Code en tu terminal.</li>
+        <li>Inicia sesión en tu cuenta (plan Pro recomendado, ~15–20 €/mes).</li>
+        <li>Abre tu proyecto local Astro.</li>
+      </ol>
+      <div class="tip"><b>Motivo:</b> la IA necesita ver el proyecto para crear y modificar código por sí misma.</div>
+      <div class="bad"><b>Error frecuente:</b> usar el chat web normal y copiar/pegar código a mano. <b>Solución:</b> usa Claude Code dentro del proyecto.</div>
+      <p><b>Resultado esperado:</b> la terminal reconoce tu carpeta y la IA está lista.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-num">2</span><h4>Investigación e ideación (meta-prompting)</h4>
+      <p><b>Objetivo:</b> planificar antes de generar código.</p>
+      <ol>
+        <li>Selecciona un modelo de razonamiento para esta fase.</li>
+        <li>Pide a la IA que investigue tu idea y te dé sugerencias.</li>
+        <li>Pide a la IA que <b>redacte el prompt</b> que le vas a enviar después (meta-prompting).</li>
+      </ol>
+      <div class="tip"><b>Motivo:</b> la IA escribe mejores prompts para sí misma que un humano medio.</div>
+      <p><b>Resultado esperado:</b> tienes un prompt bien construido listo para el paso 3.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-num">3</span><h4>Generación automática de la landing principal</h4>
+      <p><b>Objetivo:</b> crear la estructura, contenido, diseño y versiones multilingües.</p>
+      <ol>
+        <li>Envía el prompt de creación a Claude Code.</li>
+        <li>La IA revisa páginas existentes para evitar canibalizaciones.</li>
+        <li>Claude Code genera estructura, diseño responsive, idiomas (hreflang) y sitemap.</li>
+      </ol>
+      <div class="warn"><b>Nota:</b> si MCP/Semrush falla, la IA seguirá creando la página con su conocimiento interno.</div>
+      <p><b>Resultado esperado:</b> en ~7 minutos tienes una landing completa lista para revisar.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-num">4</span><h4>Corrección de estructura y copywriting humano</h4>
+      <p><b>Objetivo:</b> asegurar coherencia narrativa.</p>
+      <ol>
+        <li>Navega por la web y revisa los bloques visuales.</li>
+        <li>Comprueba que no haya secciones huérfanas o sin título.</li>
+        <li>Pide a la IA ajustar los encabezados necesarios.</li>
+      </ol>
+      <div class="tip"><b>Motivo:</b> el ojo humano valida lo que la IA no puede: la experiencia real de lectura.</div>
+      <p><b>Resultado esperado:</b> la narrativa fluye de principio a fin sin saltos confusos.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-num">5</span><h4>Optimización del Schema Markup</h4>
+      <p><b>Objetivo:</b> que Google entienda perfectamente tu página.</p>
+      <ol>
+        <li>Pide a Claude Code que audite los archivos JSON-LD.</li>
+        <li>Verifica el nodo del servicio (ej. <code>ProfessionalService</code>) y sus campos.</li>
+      </ol>
+      <div class="ok"><b>Caso real:</b> la IA detectó que se usaba el meta-title completo en el campo <code>Name</code>. Al corregir la plantilla base, arregló 40+ páginas automáticamente.</div>
+      <p><b>Resultado esperado:</b> Schema validado sin errores.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-num">6</span><h4>Estrategia de enlazado interno (interlinking)</h4>
+      <p><b>Objetivo:</b> transmitir autoridad entre las páginas de tu web.</p>
+      <ol>
+        <li><b>Opción básica:</b> pide a la IA enlazar hacia tus verticales más potentes.</li>
+        <li><b>Opción avanzada (recomendada):</b> conecta la IA a Search Console vía MCP y pide enlazar a las páginas con más visitas reales.</li>
+      </ol>
+      <p><b>Resultado esperado:</b> red de enlaces que refuerza tus páginas clave.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-num">7</span><h4>Alojamiento y despliegue</h4>
+      <p><b>Objetivo:</b> publicar la web en internet.</p>
+      <ol>
+        <li>Elige un hosting rápido (discos rápidos, RAM adecuada, buen soporte).</li>
+        <li>Si vienes de WordPress, solicita la migración gratuita.</li>
+        <li>Conecta el repositorio Astro y publica.</li>
+      </ol>
+      <div class="tip"><b>Consejo:</b> con Astro no necesitas servidores caros. Un hosting básico/intermedio (~20 €/mes) vuela.</div>
+      <p><b>Resultado esperado:</b> la web está online y carga en menos de 1,5 segundos.</p>
+    </div>
+
+    <div class="card">
+      <h3>✅ Checklist de publicación</h3>
+      <ul class="checklist" data-list="proc-check">
+        <li><input type="checkbox" id="c1"><label for="c1">La web carga en menos de 1,5 s.</label></li>
+        <li><input type="checkbox" id="c2"><label for="c2">No se repite la keyword de forma antinatural.</label></li>
+        <li><input type="checkbox" id="c3"><label for="c3">La versión móvil fluye perfectamente.</label></li>
+        <li><input type="checkbox" id="c4"><label for="c4">Schema Markup validado sin errores.</label></li>
+        <li><input type="checkbox" id="c5"><label for="c5">Hreflang y sitemap generados.</label></li>
+        <li><input type="checkbox" id="c6"><label for="c6">Interlinking conecta con las secciones principales.</label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== PROMPTS ==================== -->
+  <section class="panel" id="panel-prompts" role="tabpanel">
+    <div class="card">
+      <h2>Manual de prompts oficiales</h2>
+      <p>Recopilación completa de todos los <b>prompts e instrucciones</b> para el desarrollo, diseño, posicionamiento SEO y optimización de páginas web con Inteligencia Artificial. Pulsa <b>Copiar</b> para llevar el texto al portapapeles.</p>
+      <div class="tip"><b>Consejo:</b> adapta cada prompt a tu proyecto sustituyendo los ejemplos (agencia de automatizaciones, Agencia SEO Barcelona, etc.) por los tuyos propios.</div>
+    </div>
+
+    <div class="card" id="indice-prompts">
+      <h3>📑 Índice de prompts</h3>
+      <ol class="prompt-index">
+        <li><a href="#prompt-1">Crear landing page completa con SEO</a></li>
+        <li><a href="#prompt-2">Meta-prompting: pedir a la IA que escriba el prompt</a></li>
+        <li><a href="#prompt-3">Investigación e ideación previa</a></li>
+        <li><a href="#prompt-4">Auditoría de Schema Markup</a></li>
+        <li><a href="#prompt-5">Corrección de estructura, claridad y narrativa</a></li>
+        <li><a href="#prompt-6">Interlinking básico</a></li>
+        <li><a href="#prompt-7">Interlinking avanzado con Search Console vía MCP</a></li>
+        <li><a href="#prompt-8">Reorganización estructural de secciones</a></li>
+      </ol>
+    </div>
+
+    <!-- Prompt 1 -->
+    <div class="card prompt-card" id="prompt-1">
+      <h3>1. Crear landing page completa (SEO + contenido)</h3>
+      <p class="meta"><b>Descripción:</b> genera desde cero una landing page completa optimizada para Google, incluyendo contenido íntegro, diseño responsive, infográfico animado en la sección hero, sección FAQ basada en datos reales de Semrush vía MCP, revisión de E-E-A-T y GEO, y estrategia de interlinking e imágenes.</p>
+      <p class="meta"><b>Cuándo usarlo:</b> al crear una nueva landing desde cero o al rediseñar una existente que quieras posicionar en Google por una keyword competitiva.</p>
+      <div class="promptBox">
+        <button class="copyBtn" type="button">Copiar</button>
+        <pre class="promptBody">Crea una landing para que se posicione en Google por agencia de automatizaciones, haz todo el contenido, sigue la estructura que ya hay, añade algún infográfico chulo animado de automatizaciones en la sección hero, revisa todo E-E-A-T, GEO, añade la sección de FAQ apoyándote en MCP por Semrush para saber qué están buscando los usuarios y responde las preguntas para la optimización, también del interlinking y utiliza imágenes...</pre>
+      </div>
+    </div>
+
+    <!-- Prompt 2 -->
+    <div class="card prompt-card" id="prompt-2">
+      <h3>2. Meta-prompting (mejorar tu propia instrucción)</h3>
+      <p class="meta"><b>Descripción:</b> pide a la IA que redacte por ti el prompt ideal para conseguir lo que quieres, partiendo de una instrucción básica. La IA escribe mejores prompts para sí misma que un humano medio.</p>
+      <p class="meta"><b>Cuándo usarlo:</b> cuando tengas clara la idea pero no sepas cómo formularla técnicamente, o cuando quieras maximizar la calidad del resultado final.</p>
+      <div class="promptBox">
+        <button class="copyBtn" type="button">Copiar</button>
+        <pre class="promptBody">Oye, hazme el prompt para pedirle a Claude Code esto: [Instrucción básica de lo que quieres hacer].</pre>
+      </div>
+    </div>
+
+    <!-- Prompt 3 -->
+    <div class="card prompt-card" id="prompt-3">
+      <h3>3. Investigación e ideación previa</h3>
+      <p class="meta"><b>Descripción:</b> pide a la IA que investigue, opine y aporte ideas antes de programar nada. Sirve para validar una idea y explorar enfoques alternativos.</p>
+      <p class="meta"><b>Cuándo usarlo:</b> en la fase inicial de un proyecto, antes de generar código, para asegurarte de ir en la dirección correcta.</p>
+      <div class="promptBox">
+        <button class="copyBtn" type="button">Copiar</button>
+        <pre class="promptBody">Quiero hacer esto, ¿qué opinas? Investiga, dame ideas y demás.</pre>
+      </div>
+    </div>
+
+    <!-- Prompt 4 -->
+    <div class="card prompt-card" id="prompt-4">
+      <h3>4. Auditoría y revisión de datos estructurados (Schema Markup)</h3>
+      <p class="meta"><b>Descripción:</b> revisa y valida el JSON-LD y los nodos Schema de la página para asegurar que Google interpreta correctamente el tipo de negocio, servicio y contenido.</p>
+      <p class="meta"><b>Cuándo usarlo:</b> antes de publicar, o cuando Google Search Console reporte errores o advertencias de datos estructurados.</p>
+      <div class="promptBox">
+        <button class="copyBtn" type="button">Copiar</button>
+        <pre class="promptBody">¿Puedes revisar el schema para ver que todo esté bien?</pre>
+      </div>
+    </div>
+
+    <!-- Prompt 5 -->
+    <div class="card prompt-card" id="prompt-5">
+      <h3>5. Corrección de estructura, claridad y narrativa visual</h3>
+      <p class="meta"><b>Descripción:</b> ajusta secciones confusas o mal ordenadas que rompen la lectura, añadiendo contexto al inicio de un bloque para que el visitante entienda qué está viendo.</p>
+      <p class="meta"><b>Cuándo usarlo:</b> tras la generación automática, cuando detectes que un bloque (por ejemplo, tras las reseñas) no se entiende o no fluye narrativamente.</p>
+      <div class="promptBox">
+        <button class="copyBtn" type="button">Copiar</button>
+        <pre class="promptBody">En el apartado donde dices diagnóstico..., añade algo al inicio porque si no, después de las reseñas, no se entiende qué es (si es una metodología, el roadmap o el método).</pre>
+      </div>
+    </div>
+
+    <!-- Prompt 6 -->
+    <div class="card prompt-card" id="prompt-6">
+      <h3>6. Estrategia de enlazado interno (Interlinking básico)</h3>
+      <p class="meta"><b>Descripción:</b> pide a la IA que enlace tu página hacia las verticales más potentes de tu web para transmitir autoridad interna.</p>
+      <p class="meta"><b>Cuándo usarlo:</b> cuando quieras reforzar páginas clave de tu sitio sin depender de datos externos de tráfico.</p>
+      <div class="promptBox">
+        <button class="copyBtn" type="button">Copiar</button>
+        <pre class="promptBody">Mete el interlinking para nutrir las verticales más potentes de mi web, por ejemplo Agencia SEO Barcelona, Agencia Google Ads o las que consideres.</pre>
+      </div>
+    </div>
+
+    <!-- Prompt 7 -->
+    <div class="card prompt-card" id="prompt-7">
+      <h3>7. Interlinking avanzado basado en datos reales (Search Console / MCP)</h3>
+      <p class="meta"><b>Descripción:</b> conecta la IA a Google Search Console vía MCP, analiza las páginas con más visitas reales y las consultas que las posicionan, y genera enlaces internos orientados a reforzar esos activos.</p>
+      <p class="meta"><b>Cuándo usarlo:</b> cuando tengas MCP configurado, datos históricos en Search Console y quieras que el interlinking se base en rendimiento real, no en suposiciones.</p>
+      <div class="promptBox">
+        <button class="copyBtn" type="button">Copiar</button>
+        <pre class="promptBody">Conéctate al Google Search Console, analiza cuáles son las páginas más visitadas, coge las consultas de esas palabras clave y haz un interlinking en esta página para nutrir esas páginas.</pre>
+      </div>
+    </div>
+
+    <!-- Prompt 8 -->
+    <div class="card prompt-card" id="prompt-8">
+      <h3>8. Reorganización estructural de secciones</h3>
+      <p class="meta"><b>Descripción:</b> reordena bloques de la landing (FAQ, servicios, hero…) para que la estructura siga un flujo lógico de conversión: problema → solución → prueba social → resolución de dudas.</p>
+      <p class="meta"><b>Cuándo usarlo:</b> cuando la estructura generada no siga un orden comprensible para el usuario o coloque secciones clave en posiciones poco útiles.</p>
+      <div class="promptBox">
+        <button class="copyBtn" type="button">Copiar</button>
+        <pre class="promptBody">Reorganiza la estructura de la landing: mueve el bloque de FAQ justo antes del pie de página y coloca la sección de servicios principales inmediatamente después de la sección hero.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PRÁCTICA ==================== -->
+  <section class="panel" id="panel-practica" role="tabpanel">
+    <div class="card">
+      <h2>Ejercicios prácticos con solución</h2>
+      <p>Pon a prueba lo aprendido. Intenta resolver primero y luego despliega la solución.</p>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 1 — Identificar SEO antiguo vs. moderno</h3>
+      <p><b>Consigna:</b> dos propuestas de titular para la web de un dentista en Madrid. ¿Cuál es la correcta y por qué?</p>
+      <ul>
+        <li><b>Opción A:</b> <code>Clínica Dental Madrid - Dentista Madrid Económico</code></li>
+        <li><b>Opción B:</b> <code>Vuelve a sonreír sin miedo: Tu clínica dental de confianza en Madrid</code></li>
+      </ul>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <p>La <b>Opción B</b> es la correcta. La Opción A incurre en <i>keyword stuffing</i> (SEO antiguo): robótica e intrusiva. La Opción B sitúa el beneficio humano ("Vuelve a sonreír sin miedo") en primer plano mientras incluye keyword y localización de forma natural.</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 2 — Redactar un prompt de corrección</h3>
+      <p><b>Consigna:</b> tu web creada con IA ha colocado la sección FAQ antes de explicar los servicios. Escribe el prompt para corregirlo.</p>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <div class="promptBox">
+          <button class="copyBtn" type="button">Copiar</button>
+          <pre class="promptBody">Reorganiza la estructura de la landing: mueve el bloque de FAQ justo antes del pie de página y coloca la sección de servicios principales inmediatamente después de la sección hero.</pre>
+        </div>
+        <p><b>Motivo:</b> la narrativa debe guiar al usuario del problema a la solución, dejando las dudas frecuentes al final del embudo.</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 3 — Detectar el error de Schema</h3>
+      <p><b>Consigna:</b> ¿qué error suele cometerse al rellenar el campo <code>Name</code> de un Schema de tipo <code>ProfessionalService</code>?</p>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <p>Usar el <b>meta-title completo</b> como <code>Name</code> del servicio. Debe ser el <b>nombre real del servicio o negocio</b>, no el título SEO de la página.</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 4 — Elegir el prompt correcto</h3>
+      <p><b>Consigna:</b> quieres saber qué buscan realmente los usuarios antes de redactar la sección FAQ. ¿Qué prompt usarías?</p>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <p>Un prompt que combine contenido + MCP/Semrush. Ejemplo: el prompt 1 (creación de landing completa) o bien una variante específica: <i>"Apóyate en MCP por Semrush para saber qué buscan los usuarios y redacta la sección FAQ respondiendo a esas preguntas."</i></p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ==================== ERRORES ==================== -->
+  <section class="panel" id="panel-errores" role="tabpanel">
+    <div class="card">
+      <h2>Errores frecuentes y cómo evitarlos</h2>
+      <p>Estos son los 5 fallos más habituales al empezar, más los errores que <b>nunca</b> debes cometer.</p>
+    </div>
+
+    <div class="card">
+      <h3>❌ Los 5 errores frecuentes</h3>
+
+      <h4>1. Meter demasiados prompts en cola a la vez</h4>
+      <div class="bad"><b>El error:</b> escribir 10 instrucciones seguidas sin esperar a que la IA termine la primera.</div>
+      <div class="ok"><b>Solución:</b> lanza las instrucciones de una en una, revisa el resultado visual y luego continúa.</div>
+
+      <h4>2. Hacer SEO antiguo (keyword stuffing)</h4>
+      <div class="bad"><b>El error:</b> repetir "Agencia SEO Sevilla" en cada título e imagen.</div>
+      <div class="ok"><b>Solución:</b> enfoca los titulares al problema del cliente e incluye la keyword de forma sutil.</div>
+
+      <h4>3. Gastar tokens con el modelo equivocado</h4>
+      <div class="bad"><b>El error:</b> usar modelos de razonamiento profundo para tareas triviales de formateo.</div>
+      <div class="ok"><b>Solución:</b> usa modelos ligeros (Sonnet/Opus) para codificar; reserva los de razonamiento para ideación.</div>
+
+      <h4>4. Ignorar errores en el Schema Markup</h4>
+      <div class="bad"><b>El error:</b> creer que si la web se ve bonita, el código invisible para Google está bien.</div>
+      <div class="ok"><b>Solución:</b> pide siempre una revisión explícita del JSON-LD.</div>
+
+      <h4>5. No validar la estructura visual tras las reseñas</h4>
+      <div class="bad"><b>El error:</b> dejar bloques de texto inconexos que confunden al visitante.</div>
+      <div class="ok"><b>Solución:</b> revisa la web como si fueras un cliente real antes de dar el trabajo por terminado.</div>
+    </div>
+
+    <div class="card">
+      <h3>🚫 Errores que NUNCA debes cometer</h3>
+      <ol>
+        <li><b>NUNCA</b> hagas webs sobrecargadas con miles de plugins antiguos si buscas máximo rendimiento SEO.</li>
+        <li><b>NUNCA</b> abarrotes el texto de keywords de forma robótica.</li>
+        <li><b>NUNCA</b> lances 20 prompts seguidos sin revisar los cambios.</li>
+        <li><b>NUNCA</b> olvides revisar los datos estructurados Schema en JSON-LD.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>💡 Trucos de profesionales</h3>
+      <ul>
+        <li><b>Dictado por voz:</b> usa el dictado de tu sistema para explicar a la IA lo que quieres como si hablaras con un compañero.</li>
+        <li><b>Herramientas internas:</b> pide a Claude Code que cree paneles internos para gestionar clientes, automatizar correos con Apollo o herramientas de SEO local.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== RESUMEN ==================== -->
+  <section class="panel" id="panel-resumen" role="tabpanel">
+    <div class="card">
+      <h2>Resumen del tutorial</h2>
+      <p>En este tutorial hemos visto cómo la combinación de <b>Inteligencia Artificial (Claude Code)</b> y <b>Astro</b> supera a WordPress en velocidad, diseño y posicionamiento. Hemos aprendido a usar prompts estructurados, conectar datos de Semrush y Search Console vía MCP, y desplegar el sitio en servidores de alto rendimiento.</p>
+    </div>
+
+    <div class="card">
+      <h3>Conceptos clave repasados</h3>
+      <ul>
+        <li><b>Astro:</b> framework ultrarrápido sin sobrecarga.</li>
+        <li><b>Claude Code:</b> agente IA para el entorno de desarrollo.</li>
+        <li><b>MCP:</b> conector entre IA y fuentes externas.</li>
+        <li><b>Schema Markup:</b> datos invisibles para Google.</li>
+        <li><b>Interlinking:</b> red de enlaces internos.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Resumen por capítulos</h3>
+      <details><summary>Capítulo 1 — Introducción</summary>
+        <p>IA + Astro reemplaza a WordPress. Sirve para crear páginas corporativas, agencias y tiendas con máxima velocidad y SEO en minutos. Es crucial porque la IA ha cambiado las reglas del sector digital.</p>
+      </details>
+      <details><summary>Capítulo 2 — Paradigma técnico</summary>
+        <p>Astro aporta rendimiento, la IA ejecuta código y redacción, MCP conecta con datos reales. El SEO moderno prioriza al humano antes que a las keywords.</p>
+      </details>
+      <details><summary>Capítulo 3 — Guía paso a paso</summary>
+        <p>7 pasos: entorno, investigación, generación, revisión de copy, datos estructurados, interlinking y despliegue. En 7 minutos se genera una landing multilingüe con SEO profesional.</p>
+      </details>
+      <details><summary>Capítulo 4 — Prompts oficiales</summary>
+        <p>8 prompts listos para copiar y adaptar.</p>
+      </details>
+      <details><summary>Capítulo 5 — Errores y FAQ</summary>
+        <p>5 errores frecuentes y sus soluciones, más trucos profesionales.</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>🎓 Mi progreso de aprendizaje</h3>
+      <ul class="checklist" data-list="resumen-master">
+        <li><input type="checkbox" id="m1"><label for="m1">Entiendo qué es Astro y por qué es rápido.</label></li>
+        <li><input type="checkbox" id="m2"><label for="m2">Sé qué es Claude Code y cómo instalar la app.</label></li>
+        <li><input type="checkbox" id="m3"><label for="m3">Comprendo qué es MCP y para qué sirve.</label></li>
+        <li><input type="checkbox" id="m4"><label for="m4">Sé qué es Schema Markup y JSON-LD.</label></li>
+        <li><input type="checkbox" id="m5"><label for="m5">He leído los 7 pasos del procedimiento.</label></li>
+        <li><input type="checkbox" id="m6"><label for="m6">Tengo copiados los 8 prompts oficiales.</label></li>
+        <li><input type="checkbox" id="m7"><label for="m7">He resuelto los ejercicios prácticos.</label></li>
+        <li><input type="checkbox" id="m8"><label for="m8">Conozco los 5 errores frecuentes.</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>📚 Recomendaciones para seguir aprendiendo</h3>
+      <ul>
+        <li>Practica con pequeños proyectos personales para coger agilidad con la terminal de Claude Code.</li>
+        <li>Explora comunidades especializadas en desarrollo con IA y SEO moderno (ej. <i>Palo Seco School</i>).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== FUENTES ==================== -->
+  <section class="panel" id="panel-fuentes" role="tabpanel">
+    <div class="card">
+      <h2>Fuentes y referencias</h2>
+
+      <h3>📄 Fuente principal del tutorial</h3>
+      <p>Este tutorial ha sido elaborado a partir del documento:</p>
+      <ul>
+        <li><b>Archivo:</b> <code>-Adis-WordPress-C.txt</code></li>
+        <li><b>Título:</b> <i>Adiós WordPress: Cómo Crear Páginas Web con IA y Astro en 2026</i></li>
+        <li><b>Autor:</b> Rubén Sbarsky</li>
+      </ul>
+
+      <h3>🎥 Referencia audiovisual citada en el documento fuente</h3>
+      <ul>
+        <li><b>Título del vídeo:</b> <i>Adiós WordPress: así hacemos webs con IA en 2026</i></li>
+        <li><b>Canal:</b> Pedro SEO / Palo Seco</li>
+        <li><b>Enlace:</b> <code>https://youtube.com/watch?v=P6F5FU12-qE&amp;is=6M63E0hxgg-1DxL2</code></li>
+      </ul>
+
+      <h3>📘 Fuente documental de prompts</h3>
+      <ul>
+        <li><b>Documento:</b> <i>PROMPTS / Prompts Web IA</i> — Manual de instrucciones e ingeniería de prompts para desarrollo web e IA (archivo <code>-PROMPTSA-continu.txt</code>).</li>
+      </ul>
+
+      <h3>ℹ️ Información adicional</h3>
+      <p>Todo el contenido de este tutorial procede del documento fuente indicado. No se ha añadido información externa al mismo.</p>
+    </div>
+  </section>
+
+  <!-- ==================== CRÉDITOS (SIEMPRE ÚLTIMA) ==================== -->
+  <section class="panel" id="panel-creditos" role="tabpanel">
+    <div class="card credit-hero">
+      <svg viewBox="0 0 400 160" width="100%" style="max-width:400px;height:auto;display:block;margin:0 auto 12px;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Insignia animada">
+        <defs>
+          <radialGradient id="cr-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#4a90d9" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#0a0e1a" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="cr-line" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ab8f5"/>
+            <stop offset="100%" stop-color="#35c07a"/>
+          </linearGradient>
+        </defs>
+        <circle cx="200" cy="80" r="60" fill="url(#cr-grad)">
+          <animate attributeName="r" values="55;65;55" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="200" cy="80" r="50" fill="none" stroke="url(#cr-line)" stroke-width="2" stroke-dasharray="8 6">
+          <animateTransform attributeName="transform" type="rotate" from="0 200 80" to="360 200 80" dur="12s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="200" cy="80" r="38" fill="none" stroke="#4a90d9" stroke-width="1" opacity="0.6">
+          <animateTransform attributeName="transform" type="rotate" from="360 200 80" to="0 200 80" dur="8s" repeatCount="indefinite"/>
+        </circle>
+        <text x="200" y="76" text-anchor="middle" fill="#7ab8f5" font-family="sans-serif" font-size="16" font-weight="800" letter-spacing="1">RS</text>
+        <text x="200" y="96" text-anchor="middle" fill="#93a4bd" font-family="sans-serif" font-size="9" letter-spacing="2">2026</text>
+        <circle cx="150" cy="80" r="3" fill="#35c07a">
+          <animate attributeName="cx" values="150;250;150" dur="4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="250" cy="80" r="3" fill="#f0b840">
+          <animate attributeName="cx" values="250;150;250" dur="4s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+
+      <div class="credit-name">Rubén Sbarsky</div>
+      <div class="credit-role">Autor del tutorial</div>
+      <div class="credit-date" id="creditDate">30/09/2026 — 18:18:11</div>
+    </div>
+
+    <div class="card">
+      <h3>Sobre este tutorial</h3>
+      <p>Tutorial interactivo elaborado a partir del documento <i>Adiós WordPress: Cómo Crear Páginas Web con IA y Astro en 2026</i>.</p>
+      <p>Diseñado como aplicación web educativa en un único archivo HTML, sin dependencias externas, listo para usar sin conexión.</p>
+    </div>
+  </section>
+
+</main>
+
+<button class="to-top" id="toTop" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<footer>
+  <p>Adiós WordPress · Tutorial IA + Astro 2026 · Por <b>Rubén Sbarsky</b></p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ===== Utilidades localStorage seguras =====
+  var LS = {
+    get: function (k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+
+  // ===== FECHA FIJA EN CRÉDITOS =====
+  var creditDateEl = document.getElementById("creditDate");
+  if (creditDateEl) creditDateEl.textContent = "30/09/2026 — 18:18:11";
+
+  // ===== PESTAÑAS =====
+  var tabs = document.querySelectorAll(".tab");
+  var panels = document.querySelectorAll(".panel");
+
+  function activateTab(name) {
+    tabs.forEach(function (t) { t.classList.toggle("active", t.dataset.tab === name); });
+    panels.forEach(function (p) { p.classList.toggle("active", p.id === "panel-" + name); });
+    LS.set("tutorial-tab", name);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function () { activateTab(t.dataset.tab); });
+  });
+
+  // Restaurar pestaña activa
+  var savedTab = LS.get("tutorial-tab", "inicio");
+  if (document.getElementById("panel-" + savedTab)) activateTab(savedTab);
+
+  // ===== TAMAÑO DE FUENTE =====
+  var scale = parseFloat(LS.get("tutorial-scale", "1"));
+  function applyScale() {
+    document.documentElement.style.setProperty("--font-scale", scale);
+    LS.set("tutorial-scale", String(scale));
+  }
+  applyScale();
+
+  var btnFontUp = document.getElementById("btnFontUp");
+  var btnFontDown = document.getElementById("btnFontDown");
+  if (btnFontUp) btnFontUp.addEventListener("click", function () { scale = Math.min(1.6, scale + 0.1); applyScale(); });
+  if (btnFontDown) btnFontDown.addEventListener("click", function () { scale = Math.max(0.75, scale - 0.1); applyScale(); });
+
+  // ===== TEMA =====
+  var theme = LS.get("tutorial-theme", "dark");
+  var btnTheme = document.getElementById("btnTheme");
+  function applyTheme() {
+    if (theme === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+      if (btnTheme) btnTheme.textContent = "☀️ Tema";
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      if (btnTheme) btnTheme.textContent = "🌙 Tema";
+    }
+    LS.set("tutorial-theme", theme);
+  }
+  applyTheme();
+
+  if (btnTheme) btnTheme.addEventListener("click", function () {
+    theme = theme === "dark" ? "light" : "dark";
+    applyTheme();
+  });
+
+  // ===== IMPRIMIR / PDF =====
+  var btnPrint = document.getElementById("btnPrint");
+  if (btnPrint) btnPrint.addEventListener("click", function () { window.print(); });
+
+  // ===== VOLVER ARRIBA =====
+  var toTop = document.getElementById("toTop");
+  window.addEventListener("scroll", function () {
+    if (toTop) toTop.classList.toggle("show", window.scrollY > 400);
+  });
+  if (toTop) toTop.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // ===== BARRA DE PROGRESO =====
+  var progressBar = document.getElementById("progressBar");
+  window.addEventListener("scroll", function () {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+    if (progressBar) progressBar.style.width = pct + "%";
+  });
+
+  // ===== CHECKLISTS CON PERSISTENCIA =====
+  document.querySelectorAll(".checklist").forEach(function (list) {
+    var key = "tutorial-check-" + (list.dataset.list || "default");
+    var saved = {};
+    try { saved = JSON.parse(LS.get(key, "{}")); } catch (e) { saved = {}; }
+
+    list.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+      if (saved[cb.id]) {
+        cb.checked = true;
+        var li = cb.closest("li");
+        if (li) li.classList.add("done");
+      }
+      cb.addEventListener("change", function () {
+        saved[cb.id] = cb.checked;
+        var li = cb.closest("li");
+        if (li) li.classList.toggle("done", cb.checked);
+        LS.set(key, JSON.stringify(saved));
+      });
+    });
+  });
+
+  // ===== COPIAR AL PORTAPAPELES (implementación robusta multi-escenario) =====
+  function legacyCopy(text) {
+    return new Promise(function (resolve, reject) {
+      var ta = null;
+      var prevActive = null;
+      try {
+        prevActive = document.activeElement;
+
+        ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.setAttribute('aria-hidden', 'true');
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '-9999px';
+        ta.style.width = '2em';
+        ta.style.height = '2em';
+        ta.style.padding = '0';
+        ta.style.border = 'none';
+        ta.style.outline = 'none';
+        ta.style.boxShadow = 'none';
+        ta.style.background = 'transparent';
+
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { ta.setSelectionRange(0, ta.value.length); } catch (_e) {}
+
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ta = null;
+
+        if (prevActive && typeof prevActive.focus === 'function') {
+          try { prevActive.focus(); } catch (_e) {}
+        }
+
+        ok ? resolve() : reject(new Error('execCommand("copy") devolvió false'));
+      } catch (err) {
+        if (ta && ta.parentNode) { try { ta.parentNode.removeChild(ta); } catch (_e) {} }
+        reject(err);
+      }
+    });
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard
+        && window.isSecureContext
+        && typeof navigator.clipboard.writeText === 'function') {
+      return navigator.clipboard.writeText(text).catch(function () {
+        return legacyCopy(text);
+      });
+    }
+    return legacyCopy(text);
+  }
+
+  document.querySelectorAll('.copyBtn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var box = btn.closest('.promptBox');
+      if (!box) return;
+      var body = box.querySelector('.promptBody');
+      if (!body) return;
+
+      copyText(body.textContent).then(function () {
+        var original = btn.getAttribute('data-original') || btn.textContent;
+        btn.textContent = '✓ COPIADO';
+        btn.classList.add('done');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('done');
+        }, 1800);
+      }).catch(function () {
+        try {
+          var range = document.createRange();
+          range.selectNodeContents(body);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } catch (e) {}
+        var original = btn.textContent;
+        btn.textContent = 'SELECCIONA Y COPIA';
+        setTimeout(function () { btn.textContent = original; }, 2200);
+      });
+    });
+  });
+
+  // ===== BUSCADOR =====
+  var searchInput = document.getElementById("searchInput");
+  var searchBtn = document.getElementById("btnSearch");
+  var clearBtn = document.getElementById("btnClear");
+
+  function clearHighlights() {
+    document.querySelectorAll(".search-hl").forEach(function (el) {
+      var parent = el.parentNode;
+      if (!parent) return;
+      parent.replaceChild(document.createTextNode(el.textContent), el);
+      parent.normalize();
+    });
+  }
+
+  function highlightInNode(node, term) {
+    if (node.nodeType === 3) {
+      var text = node.nodeValue;
+      var lower = text.toLowerCase();
+      var idx = lower.indexOf(term);
+      if (idx === -1) return false;
+      var span = document.createElement("span");
+      span.className = "search-hl";
+      span.textContent = text.substr(idx, term.length);
+      var after = node.splitText(idx);
+      after.nodeValue = after.nodeValue.substr(term.length);
+      node.parentNode.insertBefore(span, after);
+      return true;
+    }
+    if (node.nodeType === 1 && node.tagName !== "SCRIPT" && node.tagName !== "STYLE") {
+      var children = Array.prototype.slice.call(node.childNodes);
+      for (var i = 0; i < children.length; i++) {
+        highlightInNode(children[i], term);
+      }
+    }
+    return false;
+  }
+
+  function doSearch() {
+    clearHighlights();
+    var term = searchInput.value.trim().toLowerCase();
+    if (!term) return;
+
+    var foundTab = null;
+    panels.forEach(function (panel) {
+      if (foundTab) return;
+      var text = (panel.textContent || "").toLowerCase();
+      if (text.indexOf(term) !== -1) {
+        foundTab = panel.id.replace("panel-", "");
+      }
+    });
+
+    if (foundTab) {
+      activateTab(foundTab);
+      setTimeout(function () {
+        var activePanel = document.getElementById("panel-" + foundTab);
+        if (!activePanel) return;
+        highlightInNode(activePanel, term);
+        var first = activePanel.querySelector(".search-hl");
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 250);
+    } else {
+      alert("No se han encontrado resultados para: " + searchInput.value);
+    }
+  }
+
+  if (searchBtn) searchBtn.addEventListener("click", doSearch);
+  if (searchInput) searchInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") doSearch();
+  });
+  if (clearBtn) clearBtn.addEventListener("click", function () {
+    searchInput.value = "";
+    clearHighlights();
+  });
+})();
+</script>
+</body>
+</html>
