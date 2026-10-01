@@ -426,13 +426,87 @@
   }
   .search-hl { background: #f0b840; color: #0a0e1a; border-radius: 3px; padding: 0 2px; }
   .no-results { color: var(--muted); text-align: center; padding: 20px; font-style: italic; display: none; }
+
+  /* ==================== ESTILOS DE IMPRESIÓN / PDF (COMPLETO) ==================== */
   @media print {
-    .toolbar, .tabs, .to-top, .copyBtn, .progress-bar { display: none !important; }
-    body { background: #fff; color: #000; }
-    .panel { display: block !important; page-break-after: always; }
-    .card, pre { border: 1px solid #ccc; background: #fff; color: #000; }
-    h2 { color: #000; }
+    @page { size: A4 portrait; margin: 14mm 12mm; }
+
+    /* 1. Forzar tema claro a nivel de variables */
+    :root, :root[data-theme="light"] {
+      --bg: #fff; --card: #fff; --text: #000; --muted: #444;
+      --border: #aaa; --code: #f2f2f2; --accent: #e8e8e8;
+    }
+
+    /* 2. Reset del documento */
+    html, body {
+      background: #fff !important;
+      color: #000 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: 11pt;
+    }
+
+    /* 3. Ocultar la interfaz */
+    .toolbar, .tabs, .to-top, .copyBtn, .progress-bar,
+    .svg-hero, nav, .search-hl { display: none !important; }
+
+    /* 4. Todos los paneles en flujo continuo */
+    .panel {
+      display: block !important;
+      page-break-after: auto !important;
+      break-after: auto !important;
+      animation: none !important;
+    }
+
+    /* 5. TODO el texto en negro, sin degradados ni sombras */
+    body, body * {
+      color: #000 !important;
+      -webkit-text-fill-color: #000 !important;
+      background-image: none !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+
+    /* 6. Fondos y bordes legibles */
+    .card, .step, details, table, th, td, pre, code,
+    .note, .tip, .warn, .bad, .ok, .promptBox {
+      background: #fff !important;
+      border: 1px solid #999 !important;
+    }
+    pre, code  { background: #f5f5f5 !important; }
+    th         { background: #e8e8e8 !important; }
+    tr:nth-child(even) td { background: #f7f7f7 !important; }
+    .step      { border-left: 4px solid #333 !important; }
+    .credit-date { background: #eee !important; color: #000 !important; }
+
+    /* 7. Nada de contenido cortado */
+    pre {
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      overflow: visible !important;
+      padding: 10px !important;
+    }
+    .promptBox > pre.promptBody { padding: 10px !important; }
+
+    table { display: table !important; width: 100% !important; table-layout: fixed; }
+    table thead { display: table-header-group !important; }
+    table tbody { display: table-row-group !important; }
+    th, td { word-break: break-word; }
+
+    /* 8. Saltos de página limpios */
+    .card, .step, details, pre, table, .promptBox, .checklist li {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    h2, h3, h4 { page-break-after: avoid !important; break-after: avoid !important; }
+
+    /* 9. Detalles */
+    a { text-decoration: underline !important; }
+    details summary::after { display: none !important; }
+    .checklist input[type="checkbox"] { accent-color: #000; }
+    .checklist li.done label { text-decoration: line-through; color: #666 !important; }
   }
+
   footer {
     text-align: center;
     padding: 24px 16px;
@@ -1277,10 +1351,6 @@
     applyTheme();
   });
 
-  // ===== IMPRIMIR / PDF =====
-  var btnPrint = document.getElementById("btnPrint");
-  if (btnPrint) btnPrint.addEventListener("click", function () { window.print(); });
-
   // ===== VOLVER ARRIBA =====
   var toTop = document.getElementById("toTop");
   window.addEventListener("scroll", function () {
@@ -1403,6 +1473,78 @@
       });
     });
   });
+
+  // ==================== IMPRIMIR / GUARDAR COMO PDF (ROBUSTO) ====================
+  function openAllDetails() {
+    var closed = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.open = true;
+      closed.push(d);
+    });
+    return closed;
+  }
+  function restoreDetails(list) {
+    list.forEach(function (d) { d.open = false; });
+  }
+
+  // Sincroniza el estado de los checkboxes al HTML (outerHTML no refleja .checked)
+  function syncCheckboxes() {
+    document.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+      if (cb.checked) cb.setAttribute('checked', 'checked');
+      else cb.removeAttribute('checked');
+    });
+  }
+
+  // Plan B: clonar el documento en una ventana nueva e imprimir allí
+  function printFallback() {
+    var w = null;
+    try { w = window.open('', '_blank'); } catch (e) { w = null; }
+
+    if (!w || !w.document) {
+      alert('El navegador ha bloqueado la impresión.\n\n' +
+            'Solución manual: pulsa Ctrl + P (Windows/Linux) o Cmd + P (Mac) ' +
+            'y elige «Guardar como PDF».');
+      return;
+    }
+
+    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(function () { try { w.print(); } catch (e) {} }, 600);
+  }
+
+  function printPage() {
+    syncCheckboxes();
+    var closed = openAllDetails();
+
+    // Si tras un tiempo no se disparó beforeprint, la impresión fue bloqueada
+    var fired = false;
+    var onBefore = function () { fired = true; };
+    window.addEventListener('beforeprint', onBefore);
+
+    // Red de seguridad: restaurar los <details> pase lo que pase
+    var cleanup = function () {
+      restoreDetails(closed);
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    setTimeout(cleanup, 15000);
+
+    try { window.print(); } catch (e) { fired = false; }
+
+    setTimeout(function () {
+      window.removeEventListener('beforeprint', onBefore);
+      if (!fired) printFallback();   // los <details> siguen abiertos: el clon los conserva
+    }, 600);
+  }
+
+  var btnPrint = document.getElementById('btnPrint');
+  if (btnPrint) btnPrint.addEventListener('click', printPage);
+
+  // Cubrir también Ctrl+P / Cmd+P manual
+  window.addEventListener('beforeprint', function () { openAllDetails(); });
 
   // ===== BUSCADOR =====
   var searchInput = document.getElementById("searchInput");
